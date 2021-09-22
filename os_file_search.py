@@ -35,4 +35,3 @@ def getFilteredSubfolders(directory):
 		            print(os.path.join(path, name))
 	       
 #getFilteredSubfolders(getCurrentDirectory())
-
