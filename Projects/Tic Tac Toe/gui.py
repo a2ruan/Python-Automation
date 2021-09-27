@@ -8,6 +8,7 @@ from PyQt5.QtWidgets import *
 import time
 from qt_material import apply_stylesheet 
 from PyQt5 import QtCore
+from controller import *
 
 class Widget(QWidget):
     #Global constants
@@ -26,10 +27,15 @@ class Widget(QWidget):
 
     #Constructor
     def __init__(self, app):
+        # Set up threading protocol for ascynchronous communication w/ Controller.
+        # Input of constructor is a pointer to (self), to access all instance variables
+        self.thread = ControllerThread(self)
+        self.thread.start()
+        self.player_move_signal = pyqtSignal()
 
         # Instance variables
         self.scores = [0,0,0]
-            #Set up grid contents for paintEvent. 0 = empty.  1 = player 1.  2 = player 2
+        #Set up grid contents for paintEvent. 0 = empty.  1 = player 1.  2 = player 2
         self.grid_content=[0]*9
         self.player_turn = 1 
 
@@ -43,6 +49,13 @@ class Widget(QWidget):
         self.setWindowTitle("TIC TAC TOE | MATERIAL EDITION")
         self.k = 0
         self.set_widgets()
+
+    def connect_and_emit_trigger(self):
+        self.trigger.connect(self.handle_trigger)
+
+    def handle_trigger(self):
+        print("trigger signal recieved")
+
 
     #Trigger on mouse click
     def mousePressEvent(self, QMouseEvent):
@@ -59,6 +72,7 @@ class Widget(QWidget):
                         if self.grid_content[(i-1)*3] == 0:
                             self.player_turn = self.player_turn*(-1) # Change player turn
                             self.grid_content[(i-1)*3] = self.player_turn # Update player moves
+                            self.player
                             #print(str(1+(i-1)*3))
                         break
                     elif x_pos <= self.get_click_limit(2):
@@ -91,11 +105,13 @@ class Widget(QWidget):
         self.bt_restart = QPushButton()
         self.bt_restart.setText('Restart Game')
         self.bt_restart.clicked.connect(self.restart_game)
+        self.bt_restart.clicked.connect(self.thread.restart_game)
         self.bt_restart.move(self.WINDOW_MARGIN,int(self.WINDOW_MARGIN/3))
 
         self.bt_reset_score = QPushButton()
         self.bt_reset_score.setText('Reset Score')
         self.bt_reset_score.clicked.connect(self.reset_score)
+        self.bt_reset_score.clicked.connect(self.thread.reset_score)
         self.bt_reset_score.move(self.WINDOW_WIDTH-self.WINDOW_MARGIN-self.bt_reset_score.size().width()-self.BUTTON_MARGIN,\
             int(self.WINDOW_MARGIN/3))
 
@@ -199,6 +215,7 @@ class Widget(QWidget):
                         self.WINDOW_MARGIN-kk+grid_size*(i+1),self.WINDOW_MARGIN+grid_size*(j)+kk)
                     painter.drawLine(self.WINDOW_MARGIN+kk+grid_size*(i),self.WINDOW_MARGIN+grid_size*(j)+kk,\
                         self.WINDOW_MARGIN-kk+grid_size*(i+1),self.WINDOW_MARGIN+grid_size*(j+1)-kk)
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

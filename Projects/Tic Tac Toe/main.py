@@ -28,31 +28,12 @@ class GUI(Thread):
 		#Once GUI is closed, close backend
 		self.running = False
 		sys.exit(self.app.exec_())
-		
 
 if __name__ == '__main__':
 	thread_gui = GUI()
 	thread_backend = Backend(thread_gui)
 	thread_backend.start()
 	thread_gui.start()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 """
